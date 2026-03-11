@@ -1,0 +1,27 @@
+{
+  "name": "qa-automation-performance-assessment",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Playwright + TypeScript UI automation and k6 performance tests for recruitment assessment.",
+  "scripts": {
+    "test:ui": "playwright test -c ui-tests/playwright.config.ts",
+    "test:ui:smoke": "playwright test -c ui-tests/playwright.config.ts --grep \"@smoke\"",
+    "test:ui:headed": "playwright test -c ui-tests/playwright.config.ts --headed",
+    "test:ui:report": "playwright show-report",
+    "lint": "eslint \"ui-tests/**/*.{ts,tsx}\"",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
+    "test:perf": "k6 run perf-tests/dummyjson-auth-me.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-playwright": "^1.6.2",
+    "prettier": "^3.3.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.0"
+  }
+}
+

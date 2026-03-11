@@ -1,0 +1,17 @@
+node_modules
+dist
+
+# Playwright artifacts
+ui-tests/playwright-report
+ui-tests/test-results
+ui-tests/.auth
+
+# k6 / perf temp files
+perf-tests/*.json
+perf-tests/*.csv
+
+# OS / editor junk
+.DS_Store
+.idea
+.vscode
+
