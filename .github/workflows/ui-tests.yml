@@ -51,10 +51,10 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+        run: npx playwright install --with-deps -c ui-tests/playwright.config.ts
 
       - name: Run Playwright tests (chromium)
-        run: npx playwright test --project=chromium
+        run: npx playwright test -c ui-tests/playwright.config.ts --project=chromium
 
       - name: Upload Playwright HTML report
         uses: actions/upload-artifact@v4
@@ -81,10 +81,10 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+        run: npx playwright install --with-deps -c ui-tests/playwright.config.ts
 
       - name: Run Playwright tests (firefox)
-        run: npx playwright test --project=firefox
+        run: npx playwright test -c ui-tests/playwright.config.ts --project=firefox
 
   ui-tests-webkit:
     runs-on: ubuntu-latest
@@ -104,10 +104,10 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+        run: npx playwright install --with-deps -c ui-tests/playwright.config.ts
 
       - name: Run Playwright tests (webkit)
-        run: npx playwright test --project=webkit
+        run: npx playwright test -c ui-tests/playwright.config.ts --project=webkit
 
   ui-tests-chromium-mobile:
     runs-on: ubuntu-latest
@@ -127,10 +127,10 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+        run: npx playwright install --with-deps -c ui-tests/playwright.config.ts
 
       - name: Run Playwright tests (chromium-mobile)
-        run: npx playwright test --project=chromium-mobile
+        run: npx playwright test -c ui-tests/playwright.config.ts --project=chromium-mobile
 
   ui-tests-webkit-mobile:
     runs-on: ubuntu-latest
@@ -150,8 +150,8 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+        run: npx playwright install --with-deps -c ui-tests/playwright.config.ts
 
       - name: Run Playwright tests (webkit-mobile)
-        run: npx playwright test --project=webkit-mobile
+        run: npx playwright test -c ui-tests/playwright.config.ts --project=webkit-mobile
 
