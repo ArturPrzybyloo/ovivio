@@ -1,0 +1,157 @@
+name: UI tests
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      run_chromium:
+        description: 'Run Chromium project'
+        type: boolean
+        default: true
+      run_firefox:
+        description: 'Run Firefox project'
+        type: boolean
+        default: false
+      run_webkit:
+        description: 'Run WebKit project'
+        type: boolean
+        default: false
+      run_chromium_mobile:
+        description: 'Run Chromium mobile project'
+        type: boolean
+        default: false
+      run_webkit_mobile:
+        description: 'Run WebKit mobile project'
+        type: boolean
+        default: false
+
+jobs:
+  ui-tests-chromium:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: github.event_name != 'workflow_dispatch' || inputs.run_chromium == 'true'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright tests (chromium)
+        run: npx playwright test --project=chromium
+
+      - name: Upload Playwright HTML report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report
+
+  ui-tests-firefox:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: github.event_name == 'workflow_dispatch' && inputs.run_firefox == 'true'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright tests (firefox)
+        run: npx playwright test --project=firefox
+
+  ui-tests-webkit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: github.event_name == 'workflow_dispatch' && inputs.run_webkit == 'true'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright tests (webkit)
+        run: npx playwright test --project=webkit
+
+  ui-tests-chromium-mobile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: github.event_name == 'workflow_dispatch' && inputs.run_chromium_mobile == 'true'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright tests (chromium-mobile)
+        run: npx playwright test --project=chromium-mobile
+
+  ui-tests-webkit-mobile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: github.event_name == 'workflow_dispatch' && inputs.run_webkit_mobile == 'true'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright tests (webkit-mobile)
+        run: npx playwright test --project=webkit-mobile
+
