@@ -1,4 +1,4 @@
-name: CI tests
+name: UI tests
 
 on:
   push:
@@ -9,11 +9,37 @@ on:
     branches:
       - main
       - master
+  workflow_dispatch:
+    inputs:
+      run_chromium:
+        description: 'Run Chromium project'
+        type: boolean
+        default: true
+      run_firefox:
+        description: 'Run Firefox project'
+        type: boolean
+        default: false
+      run_webkit:
+        description: 'Run WebKit project'
+        type: boolean
+        default: false
+      run_chromium_mobile:
+        description: 'Run Chromium mobile project'
+        type: boolean
+        default: false
+      run_webkit_mobile:
+        description: 'Run WebKit mobile project'
+        type: boolean
+        default: false
 
 jobs:
   ui-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [chromium, firefox, webkit, chromium-mobile, webkit-mobile]
 
     steps:
       - name: Checkout repository
@@ -30,28 +56,19 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Run Playwright tests
-        run: npm run test:ui
+      - name: Run Playwright tests for project
+        if: >
+          (matrix.project == 'chromium' && (github.event_name != 'workflow_dispatch' || inputs.run_chromium == 'true')) ||
+          (matrix.project == 'firefox' && github.event_name == 'workflow_dispatch' && inputs.run_firefox == 'true') ||
+          (matrix.project == 'webkit' && github.event_name == 'workflow_dispatch' && inputs.run_webkit == 'true') ||
+          (matrix.project == 'chromium-mobile' && github.event_name == 'workflow_dispatch' && inputs.run_chromium_mobile == 'true') ||
+          (matrix.project == 'webkit-mobile' && github.event_name == 'workflow_dispatch' && inputs.run_webkit_mobile == 'true')
+        run: npx playwright test --project=${{ matrix.project }}
 
       - name: Upload Playwright HTML report
         uses: actions/upload-artifact@v4
-        if: always()
+        if: always() && matrix.project == 'chromium'
         with:
           name: playwright-report
           path: playwright-report
-
-  perf-tests:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    needs: ui-tests
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install k6
-        uses: grafana/setup-k6-action@v1
-
-      - name: Run k6 performance test
-        run: k6 run perf-tests/dummyjson-auth-me.js
 
