@@ -10,7 +10,15 @@ export default defineConfig({
     ? [
         ['list'],
         ['junit', { outputFile: 'playwright-report/junit-results.xml' }],
-        ['html', { outputFolder: 'playwright-report', open: 'never' }]
+        ['html', { outputFolder: 'playwright-report', open: 'never' }],
+        [
+          'ctrf',
+          {
+            outputFile: 'playwright-report/ctrf-report.json',
+            projectName: 'ui-tests',
+            environment: 'github-actions'
+          }
+        ]
       ]
     : [['list'], ['html', { outputFolder: 'playwright-report', open: 'never' }]],
   use: {
