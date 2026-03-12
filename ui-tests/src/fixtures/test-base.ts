@@ -1,4 +1,4 @@
-import { test as base, expect } from '@playwright/test';
+import { test as base, expect, BrowserContext, Page } from '@playwright/test';
 import { LoginPage } from '../pages/LoginPage';
 import { InventoryPage } from '../pages/InventoryPage';
 import { CartPage } from '../pages/CartPage';
@@ -11,6 +11,9 @@ type TestFixtures = {
   cartPage: CartPage;
   checkoutInformationPage: CheckoutInformationPage;
   loginAsStandardUser: () => Promise<void>;
+  storageStatePath: string;
+  authenticatedContext: BrowserContext;
+  authenticatedPage: Page;
 };
 
 export const test = base.extend<TestFixtures>({
@@ -38,6 +41,19 @@ export const test = base.extend<TestFixtures>({
       const inventoryPage = new InventoryPage(page);
       await inventoryPage.waitForLoaded();
     });
+  },
+  storageStatePath: async ({}, use) => {
+    await use('.auth/standard-user.json');
+  },
+  authenticatedContext: async ({ browser, storageStatePath }, use) => {
+    const context = await browser.newContext({ storageState: storageStatePath });
+    await use(context);
+    await context.close();
+  },
+  authenticatedPage: async ({ authenticatedContext }, use) => {
+    const page = await authenticatedContext.newPage();
+    await use(page);
+    await page.close();
   }
 });
 

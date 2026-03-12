@@ -72,6 +72,15 @@ jobs:
           name: playwright-ctrf-report
           path: ui-tests/ctrf/ctrf-report.json
 
+      - name: Publish test summary to Job Summary
+        uses: ctrf-io/github-test-reporter@v1
+        if: always()
+        with:
+          report-path: 'ui-tests/ctrf/*.json'
+          github-report: true
+          summary-report: true
+          test-report: true
+
   ui-tests-firefox:
     runs-on: ubuntu-latest
     timeout-minutes: 30

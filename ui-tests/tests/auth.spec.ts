@@ -6,18 +6,35 @@ import { users } from '../src/config/users';
 test.use({ storageState: undefined });
 
 test.describe('Authentication', () => {
-  test('[@smoke] allows login with standard_user', async ({ loginPage, inventoryPage }) => {
-    await loginPage.goto();
-    await loginPage.login(users.standard.username, users.standard.password);
+  test('[@smoke][@e2e] allows login with standard_user', async ({
+    loginPage,
+    inventoryPage
+  }) => {
+    await test.step('open login page', async () => {
+      await loginPage.goto();
+    });
 
-    await inventoryPage.waitForLoaded();
+    await test.step('submit credentials', async () => {
+      await loginPage.login(users.standard.username, users.standard.password);
+    });
+
+    await test.step('verify inventory is visible', async () => {
+      await inventoryPage.waitForLoaded();
+    });
   });
 
-  test('shows error for locked_out_user', async ({ loginPage }) => {
-    await loginPage.goto();
-    await loginPage.login(users.lockedOut.username, users.lockedOut.password);
+  test('[@e2e] shows error for locked_out_user', async ({ loginPage }) => {
+    await test.step('open login page', async () => {
+      await loginPage.goto();
+    });
 
-    await loginPage.assertErrorVisible('locked out');
+    await test.step('attempt login as locked_out_user', async () => {
+      await loginPage.login(users.lockedOut.username, users.lockedOut.password);
+    });
+
+    await test.step('verify error message is shown', async () => {
+      await loginPage.assertErrorVisible('locked out');
+    });
   });
 });
 

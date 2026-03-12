@@ -14,6 +14,7 @@ This repository contains a small but complete setup for the “Senior Quality En
 - Node.js (LTS) and npm.
 - Playwright browsers (installed via `npx playwright install`).
 - k6 installed locally if you want to run performance tests from your machine.
+- Optional `.env` file based on `.env.example` if you want to override default demo credentials.
 
 ### Installation
 
@@ -75,17 +76,16 @@ After a run, fill in the metrics and brief interpretation in `perf-tests/report.
 
 ### CI workflow
 
-The `.github/workflows/ci-tests.yml` workflow runs on pushes and pull requests to the main branches. It has two jobs:
+The `.github/workflows/ui-tests.yml` workflow runs Playwright tests on pushes and pull requests to the main branches. Chromium is the default target; other Playwright projects can be enabled via `workflow_dispatch` inputs. The workflow also generates a CTRF JSON report and publishes a short summary into the job summary.
 
-- `ui-tests` – installs dependencies, installs Playwright browsers, runs `npm run test:ui` and uploads the HTML report as an artifact.
-- `perf-tests` – installs k6 and runs the DummyJSON performance test (triggered after `ui-tests` completes).
+The `.github/workflows/perf-tests.yml` workflow runs the k6 scenario and can be triggered independently.
 
-This is intentionally straightforward: in a real project you might separate smoke tests from the full suite, run performance tests on a schedule rather than on every push, and wire notifications into Slack or Teams using repository secrets.
+In a real project you might separate smoke tests from the full suite, run performance tests on a schedule rather than on every push, and wire notifications into Slack or Teams using repository secrets.
 
 ### Notes on design decisions
 
-- Page objects are limited to what is needed for the requested scenarios (login, inventory, cart, checkout step one) to keep the surface area small and easy to follow.
-- A thin fixture layer (`ui-tests/src/fixtures/test-base.ts`) provides reusable login as `standard_user` without hiding too much behind indirection.
+- Page objects are limited to what is needed for the requested scenarios (login, inventory, cart, checkout step one) to keep the surface area small and easy to follow, but contain business-level actions such as `addProductToCartByName` and header/menu components.
+- A thin fixture layer (`ui-tests/src/fixtures/test-base.ts`) provides reusable login as `standard_user` and also demonstrates storageState-based fixtures (`authenticatedContext`, `authenticatedPage`), mirroring how auth would be handled with API/SSO in a larger system.
 - ESLint and Prettier are configured with conservative rules so the test code stays consistent without fighting the tooling.
 - The k6 script keeps authentication logic in `setup()` to focus the load on `/auth/me` and make the scenario easier to reason about.
 

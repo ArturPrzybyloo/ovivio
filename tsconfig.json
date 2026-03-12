@@ -7,10 +7,10 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "types": ["node", "playwright"],
+    "types": ["node", "playwright", "k6"],
     "rootDir": ".",
     "outDir": "dist"
   },
-  "include": ["ui-tests/**/*.ts"]
+  "include": ["ui-tests/**/*.ts", "perf-tests/src/**/*.ts", "perf-tests/tests/**/*.ts"]
 }
 
