@@ -1,6 +1,6 @@
 ## Performance tests for DummyJSON
 
-This directory contains a k6 scenario that exercises the DummyJSON authentication flow and the `/auth/me` endpoint under load.
+This directory contains a k6 scenario that exercises the DummyJSON authentication flow and the `/auth/me` endpoint under load. The test code is written in TypeScript and bundled to JavaScript before execution.
 
 ### Scenario overview
 
@@ -10,7 +10,7 @@ This directory contains a k6 scenario that exercises the DummyJSON authenticatio
 - Each user sends one authenticated request per second.
 - Use a short ramp-up, a few minutes at steady load, and a short ramp-down to reach stable metrics without making the run unnecessarily long.
 
-The implementation is in `dummyjson-auth-me.js`. The script uses a `setup` function to authenticate once and share the token across VUs, which is usually closer to a real-world pattern for API backends protected by stateless tokens.
+The main implementation lives in `src/tests/dummyjson-auth-me.test.ts`. The TypeScript sources are bundled to `dist/dummyjson-auth-me.js` before running k6. The script uses a `setup` function to authenticate once and share the token across VUs, which is usually closer to a real-world pattern for API backends protected by stateless tokens.
 
 ### Prerequisites
 
@@ -25,29 +25,64 @@ From the repository root:
 npm run test:perf
 ```
 
-or directly with k6:
-
-```bash
-k6 run perf-tests/dummyjson-auth-me.js
-```
-
 You can override the default DummyJSON demo credentials with environment variables:
 
 ```bash
 export DUMMYJSON_USERNAME="your-username"
 export DUMMYJSON_PASSWORD="your-password"
-k6 run perf-tests/dummyjson-auth-me.js
+k6 run perf-tests/dist/dummyjson-auth-me.js
 ```
+
+### Optional: Grafana + InfluxDB dashboard
+
+If you want to visualise the k6 metrics locally you can spin up InfluxDB and Grafana using the provided `docker-compose.yml` in this directory.
+
+1. From the `perf-tests` folder start the monitoring stack:
+
+   ```bash
+   docker compose up -d
+   ```
+
+   This starts:
+
+   - InfluxDB on `http://localhost:8086` with a `k6` database.
+   - Grafana on `http://localhost:3000` (default login `admin` / `admin`).
+
+2. Run the test and send results to InfluxDB:
+
+   ```bash
+   npm run perf:build
+   k6 run perf-tests/dist/dummyjson-auth-me.js --out influxdb=http://localhost:8086/k6
+   ```
+
+3. Open Grafana in the browser (`http://localhost:3000`), add an **InfluxDB** data source:
+
+   - URL: `http://influxdb:8086`
+   - Database: `k6`
+
+4. Import a standard k6 dashboard (for example by using a dashboard ID from Grafana.com) and point it to the `k6` data source. You should see metrics from your DummyJSON scenario appear on the panels.
 
 ### Adjusting load profile
 
-The current options use staged execution:
+Load profile is selected based on the `SCENARIO` environment variable and configured in `src/scenarios.ts`. Available scenarios:
 
-- 1 minute ramp-up to 100 VUs.
-- 3 minutes at 100 VUs.
-- 1 minute ramp-down.
+- `load` (default): balanced ramp-up/steady/ramp-down for 100 VUs.
+- `spike`: short baseline then aggressive spike to higher load.
+- `stress`: gradual increase towards higher sustained load to look for failure points.
+- `endurance`: lower load over a longer period to observe stability over time.
 
-You can tweak this in the `options.stages` section inside `dummyjson-auth-me.js` if you need a longer steady state, a different number of users, or a different shape of the load curve. For the purposes of the assessment, this duration is a compromise between reasonably stable metrics and acceptable feedback time in CI.
+Examples:
+
+```bash
+# default load profile
+npm run test:perf
+
+# spike test
+SCENARIO=spike npm run test:perf
+
+# endurance test
+SCENARIO=endurance npm run test:perf
+```
 
 ### Metrics to capture
 

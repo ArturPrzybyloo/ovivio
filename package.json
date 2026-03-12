@@ -10,18 +10,21 @@
     "test:ui:report": "playwright show-report",
     "lint": "eslint \"ui-tests/**/*.{ts,tsx}\"",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
-    "test:perf": "k6 run perf-tests/dummyjson-auth-me.js"
+    "perf:build": "esbuild perf-tests/tests/dummyjson-auth-me.test.ts --bundle --platform=neutral --target=es2020 --outfile=perf-tests/dist/dummyjson-auth-me.js --external:k6 --external:k6/*",
+    "test:perf": "npm run perf:build && k6 run perf-tests/dist/dummyjson-auth-me.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.48.0",
+    "@types/k6": "^1.6.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
+    "esbuild": "^0.23.0",
     "eslint": "^9.0.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-playwright": "^1.6.2",
+    "playwright-ctrf-json-reporter": "^0.0.27",
     "prettier": "^3.3.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.0"
   }
 }
-

@@ -10,6 +10,16 @@ on:
       - main
       - master
   workflow_dispatch:
+    inputs:
+      scenario:
+        description: 'Load scenario to run (load, spike, stress, endurance)'
+        type: choice
+        default: load
+        options:
+          - load
+          - spike
+          - stress
+          - endurance
 
 jobs:
   perf-tests:
@@ -23,6 +33,19 @@ jobs:
       - name: Install k6
         uses: grafana/setup-k6-action@v1
 
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build k6 bundle
+        run: npm run perf:build
+
       - name: Run k6 performance test
-        run: k6 run perf-tests/dummyjson-auth-me.js
+        env:
+          SCENARIO: ${{ github.event_name == 'workflow_dispatch' && inputs.scenario || 'load' }}
+        run: k6 run perf-tests/dist/dummyjson-auth-me.js
 

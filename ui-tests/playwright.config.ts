@@ -10,7 +10,8 @@ export default defineConfig({
     ? [
         ['list'],
         ['junit', { outputFile: 'playwright-report/junit-results.xml' }],
-        ['html', { outputFolder: 'playwright-report', open: 'never' }]
+        ['html', { outputFolder: 'playwright-report', open: 'never' }],
+        ['playwright-ctrf-json-reporter', { outputDir: 'ctrf', outputFile: 'ctrf-report.json' }]
       ]
     : [['list'], ['html', { outputFolder: 'playwright-report', open: 'never' }]],
   use: {
