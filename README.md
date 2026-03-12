@@ -28,6 +28,19 @@ npm install
 npx playwright install
 ```
 
+If you want to use the provided demo credentials locally, create a `.env` file from the template and load it into your shell:
+
+```bash
+cp .env.example .env
+
+# load variables into the current shell session (bash/zsh)
+set -a
+source .env
+set +a
+```
+
+The tests intentionally do **not** provide fallback values in code – they expect credentials to be present in the environment. In CI the same variables are provided via GitHub `secrets`; locally they come from the `.env` you just loaded.
+
 ### Running UI tests
 
 All UI tests live under `ui-tests/` and are written with a simple page object model and a custom test fixture layer for reusable login logic.

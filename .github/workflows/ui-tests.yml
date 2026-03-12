@@ -32,6 +32,12 @@ on:
         type: boolean
         default: false
 
+env:
+  STANDARD_USER: ${{ secrets.STANDARD_USER }}
+  STANDARD_PASSWORD: ${{ secrets.STANDARD_PASSWORD }}
+  LOCKED_OUT_USER: ${{ secrets.LOCKED_OUT_USER }}
+  LOCKED_OUT_PASSWORD: ${{ secrets.LOCKED_OUT_PASSWORD }}
+
 jobs:
   ui-tests-chromium:
     runs-on: ubuntu-latest

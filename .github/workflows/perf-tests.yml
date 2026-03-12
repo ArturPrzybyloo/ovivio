@@ -25,6 +25,13 @@ jobs:
   perf-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      STANDARD_USER: ${{ secrets.STANDARD_USER }}
+      STANDARD_PASSWORD: ${{ secrets.STANDARD_PASSWORD }}
+      LOCKED_OUT_USER: ${{ secrets.LOCKED_OUT_USER }}
+      LOCKED_OUT_PASSWORD: ${{ secrets.LOCKED_OUT_PASSWORD }}
+      DUMMYJSON_USERNAME: ${{ secrets.DUMMYJSON_USERNAME }}
+      DUMMYJSON_PASSWORD: ${{ secrets.DUMMYJSON_PASSWORD }}
 
     steps:
       - name: Checkout repository
@@ -58,19 +65,18 @@ jobs:
             const m=s.metrics; \
             const scenario = process.env.SCENARIO || 'load'; \
             const dur = m.http_req_duration || {}; \
-            const get = (keys) => { for (const k of keys) { const v = dur[k]; if (typeof v === 'number') return v; } return undefined; }; \
-            const p50 = get(['p(50)','med','50']); \
-            const p95 = get(['p(95)','95']); \
-            const p99 = get(['p(99)','99']); \
-            const rate = m.http_req_failed && typeof m.http_req_failed.rate === 'number' ? m.http_req_failed.rate : undefined; \
-            const fmtMs = (v) => (typeof v === 'number' ? v.toFixed(0) + ' ms' : 'n/a'); \
-            const fmtRate = (v) => (typeof v === 'number' ? v.toFixed(4) : 'n/a'); \
+            const thr = dur.thresholds || {}; \
+            const p95 = thr['p(95)<800'] ? thr['p(95)<800'].actual : undefined; \
+            const p99 = thr['p(99)<1500'] ? thr['p(99)<1500'].actual : undefined; \
+            const fail = m.http_req_failed || {}; \
+            const failRate = fail.values && typeof fail.values.rate === 'number' ? fail.values.rate : undefined; \
+            const fmtMs = (v) => (typeof v === 'number' ? v.toFixed(2) + ' ms' : 'n/a'); \
+            const fmtPct = (v) => (typeof v === 'number' ? (v * 100).toFixed(2) + '%' : 'n/a'); \
             console.log( \
               'Scenario:', scenario, '\\n', \
-              '- http_req_duration P50:', fmtMs(p50), '\\n', \
-              '- http_req_duration P95:', fmtMs(p95), '\\n', \
-              '- http_req_duration P99:', fmtMs(p99), '\\n', \
-              '- Error rate (http_req_failed):', fmtRate(rate) \
+              '- http_req_duration P95 (threshold):', fmtMs(p95), '\\n', \
+              '- http_req_duration P99 (threshold):', fmtMs(p99), '\\n', \
+              '- Error rate (http_req_failed):', fmtPct(failRate) \
             );" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload k6 summary

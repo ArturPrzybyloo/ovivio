@@ -1,5 +1,5 @@
 // __ENV is provided by k6 at runtime; declare it for TypeScript.
-declare const __ENV: Record<string, string>;
+declare const __ENV: Record<string, string | undefined>;
 
 export type DummyJsonConfig = {
   baseUrl: string;
@@ -7,17 +7,21 @@ export type DummyJsonConfig = {
   password: string;
 };
 
-const DEFAULT_CONFIG: DummyJsonConfig = {
-  baseUrl: 'https://dummyjson.com',
-  username: 'kminchelle',
-  password: '0lelplR'
-};
+const DEFAULT_BASE_URL = 'https://dummyjson.com';
+
+function requireEnv(varName: string): string {
+  const value = __ENV[varName];
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${varName}`);
+  }
+  return value;
+}
 
 export function getDummyJsonConfig(): DummyJsonConfig {
   return {
-    baseUrl: __ENV.DUMMYJSON_BASE_URL || DEFAULT_CONFIG.baseUrl,
-    username: __ENV.DUMMYJSON_USERNAME || DEFAULT_CONFIG.username,
-    password: __ENV.DUMMYJSON_PASSWORD || DEFAULT_CONFIG.password
+    baseUrl: __ENV.DUMMYJSON_BASE_URL || DEFAULT_BASE_URL,
+    username: requireEnv('DUMMYJSON_USERNAME'),
+    password: requireEnv('DUMMYJSON_PASSWORD')
   };
 }
 
