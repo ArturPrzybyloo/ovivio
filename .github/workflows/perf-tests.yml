@@ -47,5 +47,29 @@ jobs:
       - name: Run k6 performance test
         env:
           SCENARIO: ${{ github.event_name == 'workflow_dispatch' && inputs.scenario || 'load' }}
-        run: k6 run perf-tests/dist/dummyjson-auth-me.js
+        run: k6 run perf-tests/dist/dummyjson-auth-me.js --summary-export perf-tests/summary.json
+
+      - name: Publish k6 summary to job summary
+        if: always()
+        run: |
+          echo '### k6 summary' >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+          node -e "const s=require('./perf-tests/summary.json'); \
+            const m=s.metrics; \
+            const p = (k) => m[k].percentiles; \
+            const scenario = process.env.SCENARIO || 'load'; \
+            console.log( \
+              'Scenario:', scenario, '\n', \
+              '- http_req_duration P50:', p('http_req_duration')['50'].toFixed(0), 'ms\n', \
+              '- http_req_duration P95:', p('http_req_duration')['95'].toFixed(0), 'ms\n', \
+              '- http_req_duration P99:', p('http_req_duration')['99'].toFixed(0), 'ms\n', \
+              '- Error rate (http_req_failed):', m.http_req_failed.rate \
+            );" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload k6 summary
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: k6-summary
+          path: perf-tests/summary.json
 
