@@ -7,7 +7,10 @@ This repository contains a small but complete setup for the “Senior Quality En
 - `ui-tests/` – Playwright + TypeScript tests for `https://www.saucedemo.com`.
 - `perf-tests/` – k6 performance test and related documentation for DummyJSON.
 - `docs/` – reflection answers for the seniority questions.
-- `.github/workflows/ci-tests.yml` – GitHub Actions workflow that runs both UI and performance tests.
+- `.github/workflows/ui-tests.yml` – GitHub Actions workflow that runs both UI and performance tests.
+
+<img width="1276" height="708" alt="image" src="https://github.com/user-attachments/assets/a1e61f84-34cb-4344-8e78-c940e601e3e6" />
+
 
 ### Prerequisites
 
