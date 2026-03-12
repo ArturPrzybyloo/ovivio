@@ -58,18 +58,19 @@ jobs:
             const m=s.metrics; \
             const scenario = process.env.SCENARIO || 'load'; \
             const dur = m.http_req_duration || {}; \
-            const vals = dur.values || {}; \
-            const p50 = vals['p(50)'] ?? vals['50']; \
-            const p95 = vals['p(95)'] ?? vals['95']; \
-            const p99 = vals['p(99)'] ?? vals['99']; \
-            const rate = m.http_req_failed ? m.http_req_failed.rate : undefined; \
-            const fmt = (v) => (typeof v === 'number' ? v.toFixed(0) + ' ms' : 'n/a'); \
+            const get = (keys) => { for (const k of keys) { const v = dur[k]; if (typeof v === 'number') return v; } return undefined; }; \
+            const p50 = get(['p(50)','med','50']); \
+            const p95 = get(['p(95)','95']); \
+            const p99 = get(['p(99)','99']); \
+            const rate = m.http_req_failed && typeof m.http_req_failed.rate === 'number' ? m.http_req_failed.rate : undefined; \
+            const fmtMs = (v) => (typeof v === 'number' ? v.toFixed(0) + ' ms' : 'n/a'); \
+            const fmtRate = (v) => (typeof v === 'number' ? v.toFixed(4) : 'n/a'); \
             console.log( \
               'Scenario:', scenario, '\\n', \
-              '- http_req_duration P50:', fmt(p50), '\\n', \
-              '- http_req_duration P95:', fmt(p95), '\\n', \
-              '- http_req_duration P99:', fmt(p99), '\\n', \
-              '- Error rate (http_req_failed):', rate !== undefined ? rate : 'n/a' \
+              '- http_req_duration P50:', fmtMs(p50), '\\n', \
+              '- http_req_duration P95:', fmtMs(p95), '\\n', \
+              '- http_req_duration P99:', fmtMs(p99), '\\n', \
+              '- Error rate (http_req_failed):', fmtRate(rate) \
             );" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload k6 summary
