@@ -62,20 +62,19 @@ jobs:
           echo '### k6 summary' >> $GITHUB_STEP_SUMMARY
           echo '' >> $GITHUB_STEP_SUMMARY
           node -e "const s=require('./perf-tests/summary.json'); \
-            const m=s.metrics; \
+            const m=s.metrics || {}; \
             const scenario = process.env.SCENARIO || 'load'; \
             const dur = m.http_req_duration || {}; \
-            const thr = dur.thresholds || {}; \
-            const p95 = thr['p(95)<800'] ? thr['p(95)<800'].actual : undefined; \
-            const p99 = thr['p(99)<1500'] ? thr['p(99)<1500'].actual : undefined; \
+            const p95 = typeof dur['p(95)'] === 'number' ? dur['p(95)'] : dur.p95; \
+            const p99 = typeof dur['p(99)'] === 'number' ? dur['p(99)'] : dur.p99; \
             const fail = m.http_req_failed || {}; \
-            const failRate = fail.values && typeof fail.values.rate === 'number' ? fail.values.rate : undefined; \
+            const failRate = typeof fail.value === 'number' ? fail.value : (typeof fail.rate === 'number' ? fail.rate : undefined); \
             const fmtMs = (v) => (typeof v === 'number' ? v.toFixed(2) + ' ms' : 'n/a'); \
             const fmtPct = (v) => (typeof v === 'number' ? (v * 100).toFixed(2) + '%' : 'n/a'); \
             console.log( \
               'Scenario:', scenario, '\\n', \
-              '- http_req_duration P95 (threshold):', fmtMs(p95), '\\n', \
-              '- http_req_duration P99 (threshold):', fmtMs(p99), '\\n', \
+              '- http_req_duration P95:', fmtMs(p95), '\\n', \
+              '- http_req_duration P99:', fmtMs(p99), '\\n', \
               '- Error rate (http_req_failed):', fmtPct(failRate) \
             );" >> $GITHUB_STEP_SUMMARY
 
