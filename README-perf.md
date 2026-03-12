@@ -60,6 +60,9 @@ If you want to visualise the k6 metrics locally you can spin up InfluxDB and Gra
    - URL: `http://influxdb:8086`
    - Database: `k6`
 
+   <img width="1424" height="738" alt="image" src="https://github.com/user-attachments/assets/26dd69de-49ff-453a-b346-63b5ed0dfb4b" />
+
+
 4. Import a standard k6 dashboard (for example by using a dashboard ID from Grafana.com) and point it to the `k6` data source. You should see metrics from your DummyJSON scenario appear on the panels.
 
 ### Adjusting load profile
