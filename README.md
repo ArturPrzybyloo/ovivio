@@ -50,6 +50,9 @@ After a run you can open the last HTML report with:
 npm run test:ui:report
 ```
 
+<img width="1015" height="398" alt="image" src="https://github.com/user-attachments/assets/5c378614-3477-41b4-bdc7-2628fba29ff4" />
+
+
 The scenarios implemented against saucedemo cover:
 
 - Successful login as `standard_user`.
