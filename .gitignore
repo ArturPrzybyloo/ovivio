@@ -5,6 +5,7 @@ dist
 ui-tests/playwright-report
 ui-tests/test-results
 ui-tests/.auth
+ui-tests/ctrf
 
 # k6 / perf temp files
 perf-tests/*.json

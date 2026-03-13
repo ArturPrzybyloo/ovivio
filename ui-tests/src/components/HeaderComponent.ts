@@ -1,4 +1,4 @@
-import { Locator, Page, expect } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 
 export class HeaderComponent {
   readonly cartIcon: Locator;
@@ -13,9 +13,10 @@ export class HeaderComponent {
     await this.cartIcon.click();
   }
 
-  async expectItemsInCart(count: number): Promise<void> {
-    const expected = String(count);
-    await expect(this.cartBadge).toHaveText(expected);
+  async getItemsInCartCount(): Promise<number> {
+    const text = (await this.cartBadge.textContent()) ?? '';
+    const parsed = Number.parseInt(text, 10);
+    return Number.isNaN(parsed) ? 0 : parsed;
   }
 }
 

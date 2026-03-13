@@ -21,7 +21,7 @@ export class InventoryPage extends BasePage {
   }
 
   async goto(): Promise<void> {
-    await this.page.goto('/');
+    await this.page.goto('/inventory.html');
     await this.waitForLoaded();
   }
 
@@ -32,10 +32,6 @@ export class InventoryPage extends BasePage {
     await expect(item).toBeVisible();
     const addButton = item.locator('button:has-text("Add to cart")');
     await addButton.click();
-  }
-
-  async openCart(): Promise<void> {
-    await this.header.openCart();
   }
 }
 

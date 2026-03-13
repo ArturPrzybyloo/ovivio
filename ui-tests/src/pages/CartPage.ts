@@ -22,11 +22,10 @@ export class CartPage extends BasePage {
     await expect(this.cartItems.first()).toBeVisible();
   }
 
-  async assertProductInCart(name: string): Promise<void> {
-    const item = this.cartItems.filter({
+  getCartItemByName(name: string): Locator {
+    return this.cartItems.filter({
       has: this.page.locator('.inventory_item_name', { hasText: name })
     });
-    await expect(item).toBeVisible();
   }
 
   async startCheckout(): Promise<void> {

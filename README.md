@@ -2,6 +2,37 @@
 
 This repository contains a small but complete setup for the “Senior Quality Engineer – Automation & Performance” assessment. It focuses on pragmatic Playwright UI automation and a simple k6 performance scenario, with enough structure to be maintainable without turning into a framework for its own sake.
 
+### Quick start
+
+#### UI tests
+
+From the repository root:
+
+```bash
+npm install
+npx playwright install
+
+cp .env.example .env
+
+set -a
+source .env
+set +a
+
+npm run test:ui:smoke
+```
+
+#### Performance tests
+
+From the repository root (after the same `.env` setup as above):
+
+```bash
+npm install
+
+npm run test:perf
+```
+
+This runs the DummyJSON `/auth/me` scenario with a default load profile and writes a `perf-tests/summary.json` file that is also used by the CI workflow to render a short summary.
+
 ### Structure
 
 - `ui-tests/` – Playwright + TypeScript tests for `https://www.saucedemo.com`.
@@ -45,7 +76,7 @@ The tests intentionally do **not** provide fallback values in code – they expe
 
 All UI tests live under `ui-tests/` and are written with a simple page object model and a custom test fixture layer for reusable login logic.
 
-Basic runs:
+Basic runs (headless, all projects):
 
 ```bash
 npm run test:ui
@@ -56,6 +87,29 @@ Headed mode for local debugging:
 ```bash
 npm run test:ui:headed
 ```
+
+You can also use Playwright’s different execution modes directly:
+
+- **Single test file, headed**:
+
+  ```bash
+  cd ui-tests
+  npx playwright test tests/cart.spec.ts --headed
+  ```
+
+- **UI mode (interactive runner with locator picker/recorder)**:
+
+  ```bash
+  cd ui-tests
+  npx playwright test --ui
+  ```
+
+- **With traces always on (for local debugging)**:
+
+  ```bash
+  cd ui-tests
+  PWTRACE=on npx playwright test tests/checkout.spec.ts --headed
+  ```
 
 After a run you can open the last HTML report with:
 
@@ -77,7 +131,7 @@ Tests use explicit expectations (`toBeVisible`, `toHaveURL`, etc.) instead of ar
 
 ### Running performance tests
 
-The performance scenario is located in `perf-tests/dummyjson-auth-me.js` and described in more detail in `perf-tests/README-perf.md`.
+The performance scenario is located in `perf-tests/tests/dummyjson-auth-me.test.ts` (TypeScript) and is bundled to `perf-tests/dist/dummyjson-auth-me.js` before execution.
 
 To run it from the repository root:
 
@@ -85,10 +139,11 @@ To run it from the repository root:
 npm run test:perf
 ```
 
-or, if you prefer to call k6 directly:
+or, if you prefer to call k6 directly after bundling:
 
 ```bash
-k6 run perf-tests/dummyjson-auth-me.js
+npm run perf:build
+k6 run perf-tests/dist/dummyjson-auth-me.js
 ```
 
 After a run, fill in the metrics and brief interpretation in `perf-tests/report.md`. That document is meant to show how you reason about the results, not to produce a perfect benchmark.
