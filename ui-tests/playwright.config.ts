@@ -1,4 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
+import path from 'path';
+
+const storageStatePath = path.join(__dirname, '.auth', 'standard-user.json');
 
 export default defineConfig({
   testDir: 'tests',
@@ -27,27 +30,27 @@ export default defineConfig({
     },
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'], storageState: '.auth/standard-user.json' },
+      use: { ...devices['Desktop Chrome'], storageState: storageStatePath },
       dependencies: ['setup']
     },
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'], storageState: '.auth/standard-user.json' },
+      use: { ...devices['Desktop Firefox'], storageState: storageStatePath },
       dependencies: ['setup']
     },
     {
       name: 'webkit',
-      use: { ...devices['Desktop Safari'], storageState: '.auth/standard-user.json' },
+      use: { ...devices['Desktop Safari'], storageState: storageStatePath },
       dependencies: ['setup']
     },
     {
       name: 'chromium-mobile',
-      use: { ...devices['Pixel 5'], storageState: '.auth/standard-user.json' },
+      use: { ...devices['Pixel 5'], storageState: storageStatePath },
       dependencies: ['setup']
     },
     {
       name: 'webkit-mobile',
-      use: { ...devices['iPhone 13'], storageState: '.auth/standard-user.json' },
+      use: { ...devices['iPhone 13'], storageState: storageStatePath },
       dependencies: ['setup']
     }
   ]

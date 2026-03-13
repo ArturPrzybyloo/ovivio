@@ -4,9 +4,10 @@
   "private": true,
   "description": "Playwright + TypeScript UI automation and k6 performance tests for recruitment assessment.",
   "scripts": {
-    "test:ui": "playwright test -c ui-tests/playwright.config.ts",
-    "test:ui:smoke": "playwright test -c ui-tests/playwright.config.ts --grep \"@smoke\"",
-    "test:ui:headed": "playwright test -c ui-tests/playwright.config.ts --headed",
+    "test:ui:prepare-auth": "cd ui-tests && npx playwright test tests/auth.setup.ts --project=setup",
+    "test:ui": "npm run test:ui:prepare-auth && playwright test -c ui-tests/playwright.config.ts",
+    "test:ui:smoke": "npm run test:ui:prepare-auth && playwright test -c ui-tests/playwright.config.ts --grep \"@smoke\"",
+    "test:ui:headed": "npm run test:ui:prepare-auth && playwright test -c ui-tests/playwright.config.ts --headed",
     "test:ui:report": "playwright show-report",
     "lint": "eslint \"ui-tests/**/*.{ts,tsx}\"",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
