@@ -1,6 +1,6 @@
 ## Performance tests for DummyJSON
 
-This directory contains a k6 scenario that exercises the DummyJSON authentication flow and the `/auth/me` endpoint under load. The test code is written in TypeScript and bundled to JavaScript before execution.
+This repository contains a k6 scenario that exercises the DummyJSON authentication flow and the `/auth/me` endpoint under load. The test code is written in TypeScript and bundled to JavaScript before execution.
 
 ### Scenario overview
 
@@ -10,26 +10,35 @@ This directory contains a k6 scenario that exercises the DummyJSON authenticatio
 - Each user sends one authenticated request per second.
 - Use a short ramp-up, a few minutes at steady load, and a short ramp-down to reach stable metrics without making the run unnecessarily long.
 
-The main implementation lives in `src/tests/dummyjson-auth-me.test.ts`. The TypeScript sources are bundled to `dist/dummyjson-auth-me.js` before running k6. The script uses a `setup` function to authenticate once and share the token across VUs, which is usually closer to a real-world pattern for API backends protected by stateless tokens.
+The main implementation lives in `perf-tests/tests/dummyjson-auth-me.test.ts`. The TypeScript sources are bundled to `perf-tests/dist/dummyjson-auth-me.js` before running k6. The script uses a `setup` function to authenticate once and share the token across VUs, which is usually closer to a real-world pattern for API backends protected by stateless tokens.
 
 ### Prerequisites
 
 - k6 installed locally (for example from the official Grafana k6 packages or via `brew install k6` on macOS).
 - Internet access to reach `https://dummyjson.com`.
+- Environment variables `DUMMYJSON_USERNAME` and `DUMMYJSON_PASSWORD` set – typically via a local `.env` file as described in the main `README.md`, and via CI secrets in GitHub Actions.
 
 ### How to run the test
 
-From the repository root:
+In short (also described in the main `README.md`):
 
 ```bash
 npm run test:perf
 ```
 
-You can override the default DummyJSON demo credentials with environment variables:
+This command:
+
+- bundles the TypeScript sources (`perf:build`),
+- runs k6 against the generated `perf-tests/dist/dummyjson-auth-me.js`,
+- writes `perf-tests/summary.json`, which is also used by the GitHub Actions workflow to render a concise summary.
+
+If you want to override the username/password just for a single run, you can run k6 directly:
 
 ```bash
 export DUMMYJSON_USERNAME="your-username"
 export DUMMYJSON_PASSWORD="your-password"
+
+npm run perf:build
 k6 run perf-tests/dist/dummyjson-auth-me.js
 ```
 
