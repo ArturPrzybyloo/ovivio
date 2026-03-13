@@ -1,4 +1,4 @@
-import { test } from '../src/fixtures/test-base';
+import { test, expect } from '../src/fixtures/test-base';
 
 const PRODUCT_NAME = 'Sauce Labs Backpack';
 
@@ -19,6 +19,9 @@ test.describe('Checkout', () => {
       await test.step('start checkout and reach information page', async () => {
         await cartPage.startCheckout();
         await checkoutInformationPage.waitForLoaded();
+        await expect(checkoutInformationPage.firstNameInput).toBeVisible();
+        await expect(checkoutInformationPage.lastNameInput).toBeVisible();
+        await expect(checkoutInformationPage.postalCodeInput).toBeVisible();
       });
     }
   );

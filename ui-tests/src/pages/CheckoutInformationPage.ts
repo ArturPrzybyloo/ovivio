@@ -17,7 +17,6 @@ export class CheckoutInformationPage extends BasePage {
 
   async waitForLoaded(): Promise<void> {
     await this.expectUrlMatches(/checkout-step-one\.html/);
-    await expect(this.firstNameInput).toBeVisible();
   }
 
   async fillCustomerInformation(firstName: string, lastName: string, postalCode: string): Promise<void> {

@@ -1,5 +1,6 @@
 import { Page, expect } from '@playwright/test';
 
+// Simple base page class for all pages.
 export abstract class BasePage {
   protected readonly page: Page;
 
