@@ -162,6 +162,9 @@ Both workflows run automatically on **push** and **pull_request** to `main` / `m
   - **Run Chromium mobile project** (e.g. Pixel 5)
   - **Run WebKit mobile project** (e.g. iPhone 13)
 
+  <img width="1411" height="630" alt="image" src="https://github.com/user-attachments/assets/b4fcc19d-f3ec-4857-ad97-627ebfd728a6" />
+
+
   Only the jobs for the selected projects are executed. This keeps CI fast on push/PR while allowing full cross-browser runs on demand.
 
 - The workflow uploads the Playwright HTML report and CTRF report as artifacts and publishes a test summary to the job summary.
@@ -174,6 +177,9 @@ Both workflows run automatically on **push** and **pull_request** to `main` / `m
   - **spike** – short baseline then spike to higher load
   - **stress** – gradual increase to find breaking point
   - **endurance** – sustained lower load over a longer period
+
+  <img width="1396" height="531" alt="image" src="https://github.com/user-attachments/assets/3655d3a8-f23b-4230-9413-5559ee2d8320" />
+
 
   The selected scenario is passed as the `SCENARIO` environment variable to k6; the script reads it in `perf-tests/src/scenarios.ts`.
 
