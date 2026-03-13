@@ -148,13 +148,38 @@ k6 run perf-tests/dist/dummyjson-auth-me.js
 
 After a run, fill in the metrics and brief interpretation in `perf-tests/report.md`. That document is meant to show how you reason about the results, not to produce a perfect benchmark.
 
-### CI workflow
+### GitHub Actions
 
-The `.github/workflows/ui-tests.yml` workflow runs Playwright tests on pushes and pull requests to the main branches. Chromium is the default target; other Playwright projects can be enabled via `workflow_dispatch` inputs. The workflow also generates a CTRF JSON report and publishes a short summary into the job summary.
+Both workflows run automatically on **push** and **pull_request** to `main` / `master`. You can also run them manually from the **Actions** tab and control what gets executed.
 
-The `.github/workflows/perf-tests.yml` workflow runs the k6 scenario and can be triggered independently.
+#### UI tests (`.github/workflows/ui-tests.yml`)
 
-In a real project you might separate smoke tests from the full suite, run performance tests on a schedule rather than on every push, and wire notifications into Slack or Teams using repository secrets.
+- **Automatic runs**: Only the **Chromium** project runs (single job).
+- **Manual run** (Actions → UI tests → Run workflow): Use the checkboxes to choose which browser projects to run:
+  - **Run Chromium project** (default: on)
+  - **Run Firefox project**
+  - **Run WebKit project**
+  - **Run Chromium mobile project** (e.g. Pixel 5)
+  - **Run WebKit mobile project** (e.g. iPhone 13)
+
+  Only the jobs for the selected projects are executed. This keeps CI fast on push/PR while allowing full cross-browser runs on demand.
+
+- The workflow uploads the Playwright HTML report and CTRF report as artifacts and publishes a test summary to the job summary.
+
+#### Performance tests (`.github/workflows/perf-tests.yml`)
+
+- **Automatic runs**: The **load** scenario is used (ramp to 100 VUs, steady, ramp-down).
+- **Manual run** (Actions → Performance tests → Run workflow): Choose the **Scenario**:
+  - **load** (default) – ramp-up, steady load at 100 VUs, ramp-down
+  - **spike** – short baseline then spike to higher load
+  - **stress** – gradual increase to find breaking point
+  - **endurance** – sustained lower load over a longer period
+
+  The selected scenario is passed as the `SCENARIO` environment variable to k6; the script reads it in `perf-tests/src/scenarios.ts`.
+
+- The workflow exports k6 metrics to `perf-tests/summary.json`, uploads it as an artifact, and writes a short table (P50, P95, P99, error rate, throughput) to the job summary.
+
+In a real project you might run smoke tests on every commit, the full UI matrix on a schedule or on release, and wire notifications (e.g. Slack/Teams) to failed runs using repository secrets.
 
 ### Notes on design decisions
 
