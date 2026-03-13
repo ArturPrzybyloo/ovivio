@@ -18,7 +18,7 @@ set -a
 source .env
 set +a
 
-npm run test:ui:smoke
+npm run test:ui
 ```
 
 #### Performance tests
