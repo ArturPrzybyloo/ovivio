@@ -31,45 +31,66 @@
 
 ### 3. Collected metrics
 
-Fill in these values after running `k6 run perf-tests/dummyjson-auth-me.js`:
+Two representative runs of the `load` scenario (100 VUs, ~5 minutes total) produced the following aggregated metrics.
 
-- **Response time percentiles (http_req_duration)**:
-  - P50: `___` ms
-  - P95: `___` ms
-  - P99: `___` ms
-- **Error rate (http_req_failed)**:
-  - Value: `___` (e.g. 0.00 for 0 % errors)
+#### Run 1
+
+- **Response time percentiles (`http_req_duration`)**:
+  - P50 (median): ~154 ms
+  - P95: 186.87 ms
+  - P99: 351.41 ms
+- **Error rate (`http_req_failed`)**:
+  - 10.53 % (2 181 failed requests out of 20 702)
 - **Throughput**:
-  - Requests per second (overall): `___` req/s
-  - Notes (optional): e.g. whether throughput was stable during the steady-state period.
+  - Requests per second: ~68.8 req/s (`http_reqs`)
+  - Iterations per second: ~68.8 it/s (`iterations`)
 
-If you need more detail, you can export results to JSON and process them with custom tooling or dashboards, but for this assessment the summary from the console output is sufficient.
+#### Run 2
+
+- **Response time percentiles (`http_req_duration`)**:
+  - P50 (median): 25.32 ms
+  - P95: 44.38 ms
+  - P99: 563.77 ms
+- **Error rate (`http_req_failed`)**:
+  - 5.82 % (1 355 failed requests out of 23 246)
+- **Throughput**:
+  - Requests per second: ~77.3 req/s
+  - Iterations per second: ~77.3 it/s
+
+In both runs the latency thresholds were satisfied:
+
+- `http_req_duration: p(95) < 800 ms` – **passed**
+- `http_req_duration: p(99) < 1500 ms` – **passed**
+
+The reliability threshold was not met:
+
+- `http_req_failed: rate < 0.05` – **failed** (10.53 % in run 1, 5.82 % in run 2)
 
 ### 4. Interpretation
 
-Use this section to summarise what the numbers tell you. Example points to address:
+- **Latency**: For a public demo API, the observed latencies are very good. In the second run, P50 ≈ 25 ms and P95 ≈ 44 ms, which would be more than acceptable for a simple authenticated read endpoint in most production systems. Even in the first run, with slightly higher load on the shared infrastructure, P95 ≈ 187 ms and P99 ≈ 351 ms remain comfortably under the 800/1500 ms thresholds.
+- **Stability and distribution**: The gap between P50 and P95 is moderate in both runs, which suggests a relatively tight distribution with occasional slower responses (especially visible in the P99 of the second run, ~564 ms). This is consistent with a shared multi-tenant demo service where some requests occasionally contend for resources but there is no clear evidence of sustained saturation.
+- **Error rate**: The main concern is reliability: 10.53 % errors in the first run and 5.82 % in the second both violate the `rate < 5 %` threshold. The failing check `auth/me status is 200` indicates that a non-trivial fraction of `/auth/me` calls did not return HTTP 200 (likely intermittent 5xx or other non-OK responses). In a production context this level of error rate would be unacceptable for a core authenticated endpoint.
+- **Throughput vs. behaviour**: The achieved throughput (~69–77 req/s) is in line with expectations for 100 VUs doing roughly one request per second each (taking into account think time and jitter). There is no sign of throughput collapsing, which means the system continues to serve traffic but does so with intermittent errors rather than graceful backpressure.
 
-- Czy przy zadanym obciążeniu (100 użytkowników, 1 żądanie na sekundę) opóźnienia są akceptowalne dla tej klasy API.
-- Czy widać wyraźne oznaki degradacji przy starcie testu, w fazie steady-state albo w ramp-down.
-- Jak wygląda rozkład percentyli – czy P95/P99 znacząco odbiegają od mediany, co może sugerować sporadyczne wolne odpowiedzi.
-- Czy pojawiły się błędy HTTP (np. 5xx, 429) i w jakiej części testu.
+Overall, DummyJSON handles the requested load with good latency characteristics but shows reliability issues under sustained concurrent access to `/auth/me`, as captured by the elevated `http_req_failed` rate.
 
-### 5. Potencjalne kierunki optymalizacji
+### 5. Potential optimisation directions
 
-Nawet jeżeli DummyJSON jest tylko przykładowym systemem, przy podobnym profilu ruchu w aplikacji produkcyjnej rozważałbym między innymi:
+Even though DummyJSON is just a demo service, in a real production system with a similar traffic pattern I would consider:
 
-- **Backend i dane**:
-  - Upewnienie się, że operacje wykonywane przez `/auth/me` są oparte na dobrze zindeksowanych danych.
-  - Cache’owanie często odczytywanych informacji o zalogowanym użytkowniku.
-- **Architektura i zasoby**:
-  - Skalowanie poziome backendu (więcej instancji) lub pionowe (więcej CPU/RAM), jeśli wąskie gardło leży po stronie CPU lub pamięci.
-  - Optymalizacja konfiguracji connection poola i keep-alive między API gateway a usługą backendową.
-- **Sieć i konfiguracja API**:
-  - Rozsądne timeouts po stronie serwera i klienta, żeby nie trzymać wiszących połączeń.
-  - Ograniczanie rozmiaru odpowiedzi, jeśli payload użytkownika jest rozbudowany.
-- **Testy i monitorowanie**:
-  - Uruchamianie podobnych testów cyklicznie (np. nightly) i śledzenie trendów percentyli i error rate.
-  - Korelacja metryk k6 z metrykami infrastruktury (CPU, pamięć, I/O) i logami aplikacji, jeśli są dostępne.
+- **Backend and data model**:
+  - Ensuring that the work done by `/auth/me` is backed by appropriate indexes and avoids unnecessary joins or remote calls.
+  - Introducing a lightweight cache for common user profile data looked up on every request (for example, session/user info in an in-memory cache with short TTL).
+- **Capacity and architecture**:
+  - Verifying that the service has enough headroom in CPU and memory at 100 VUs, and scaling horizontally (more instances) or vertically (larger instances) where necessary.
+  - Reviewing connection pool and keep-alive settings between the API gateway and backend services to avoid connection churn under load.
+- **API and networking**:
+  - Applying sensible server-side timeouts and graceful degradation strategies (e.g. circuit breakers) so that transient downstream issues do not cascade into user-visible errors.
+  - Keeping the `/auth/me` response payload minimal, especially if it is called very frequently from frontends.
+- **Testing and observability**:
+  - Running this kind of scenario regularly (for example nightly) and tracking trends in P50/P95/P99 and `http_req_failed` over time.
+  - Correlating k6 metrics with server-side observability (request logs, error logs, CPU, memory, I/O, database metrics) to pinpoint the exact source of intermittent failures.
 
-Taki raport daje wystarczający obraz zachowania API przy prostym scenariuszu obciążenia i wskazuje, w którą stronę patrzeć przy dalszych optymalizacjach.
+These steps would help turn the good latency profile observed here into a consistently reliable experience by reducing the error rate under sustained load.
 

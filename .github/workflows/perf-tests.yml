@@ -61,22 +61,33 @@ jobs:
         run: |
           echo '### k6 summary' >> $GITHUB_STEP_SUMMARY
           echo '' >> $GITHUB_STEP_SUMMARY
-          node -e "const s=require('./perf-tests/summary.json'); \
-            const m=s.metrics || {}; \
-            const scenario = process.env.SCENARIO || 'load'; \
-            const dur = m.http_req_duration || {}; \
-            const p95 = typeof dur['p(95)'] === 'number' ? dur['p(95)'] : dur.p95; \
-            const p99 = typeof dur['p(99)'] === 'number' ? dur['p(99)'] : dur.p99; \
-            const fail = m.http_req_failed || {}; \
-            const failRate = typeof fail.value === 'number' ? fail.value : (typeof fail.rate === 'number' ? fail.rate : undefined); \
-            const fmtMs = (v) => (typeof v === 'number' ? v.toFixed(2) + ' ms' : 'n/a'); \
-            const fmtPct = (v) => (typeof v === 'number' ? (v * 100).toFixed(2) + '%' : 'n/a'); \
-            console.log( \
-              'Scenario:', scenario, '\\n', \
-              '- http_req_duration P95:', fmtMs(p95), '\\n', \
-              '- http_req_duration P99:', fmtMs(p99), '\\n', \
-              '- Error rate (http_req_failed):', fmtPct(failRate) \
-            );" >> $GITHUB_STEP_SUMMARY
+          node -e "
+          const s = require('./perf-tests/summary.json');
+          const m = s.metrics || {};
+          const scenario = process.env.SCENARIO || 'load';
+          const dur = m.http_req_duration || {};
+          const p50 = typeof dur.med === 'number' ? dur.med : (dur['p(50)'] ?? undefined);
+          const p95 = typeof dur['p(95)'] === 'number' ? dur['p(95)'] : dur.p95;
+          const p99 = typeof dur['p(99)'] === 'number' ? dur['p(99)'] : dur.p99;
+          const fail = m.http_req_failed || {};
+          const failRate = typeof fail.value === 'number' ? fail.value : (fail.rate ?? undefined);
+          const reqs = m.http_reqs || {};
+          const throughput = typeof reqs.rate === 'number' ? reqs.rate : undefined;
+          const fmtMs = (v) => (typeof v === 'number' ? v.toFixed(2) + ' ms' : 'n/a');
+          const fmtPct = (v) => (typeof v === 'number' ? (v * 100).toFixed(2) + '%' : 'n/a');
+          const fmtRate = (v) => (typeof v === 'number' ? v.toFixed(2) + ' req/s' : 'n/a');
+          const lines = [
+            '| Metric | Value |',
+            '|--------|-------|',
+            '| Scenario | ' + scenario + ' |',
+            '| **P50** (median) | ' + fmtMs(p50) + ' |',
+            '| **P95** | ' + fmtMs(p95) + ' |',
+            '| **P99** | ' + fmtMs(p99) + ' |',
+            '| Error rate | ' + fmtPct(failRate) + ' |',
+            '| Throughput | ' + fmtRate(throughput) + ' |'
+          ];
+          console.log(lines.join('\n'));
+          " >> $GITHUB_STEP_SUMMARY
 
       - name: Upload k6 summary
         uses: actions/upload-artifact@v4
